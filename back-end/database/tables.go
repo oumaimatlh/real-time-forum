@@ -11,7 +11,7 @@ func TableCreation() {
   			lastName VARCHAR  NOT NULL,
   			email VARCHAR UNIQUE NOT NULL,
 			age  INTEGER NOT NULL, 
-			gender VARCHAR NOT NULL CHECK(gender IN ('Male', 'Female'))
+			gender VARCHAR NOT NULL CHECK(gender IN ('male', 'female')),
   			password VARCHAR UNIQUE NOT NULL,
   			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	)`,
@@ -41,7 +41,7 @@ func TableCreation() {
 			id INTEGER PRIMARY KEY,
 			user_id INTEGER NOT NULL,
 			post_id INTEGER NOT NULL,
-			content VARCHAR,http://localhost:8000/api/test-mail
+			content VARCHAR
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
 			FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE
@@ -77,8 +77,13 @@ func TableCreation() {
 	}
 
 	for _, query := range queries {
-		prep, _ := DB.Prepare(query)
-		if _, err := prep.Exec(); err != nil {
+		prep, err := DB.Prepare(query)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = prep.Exec()
+		if err != nil {
 			log.Fatal(err)
 		}
 	}

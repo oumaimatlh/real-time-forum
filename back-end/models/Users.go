@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"back-end/database"
@@ -18,7 +19,7 @@ type User struct {
 	CreatedAt time.Time
 }
 
-func CreateUser(user User) (int64, error) {
+func InsertUser(user User) (int64, error) {
 	query := "INSERT INTO users (nickName, firstName, lastName, email, Age, gender,  password) VALUES (?,?,?,?,?,?,?)"
 	result, err := database.DB.Exec(query, user.NickName, user.FirstName, user.LastName, user.Email, user.Age, user.Gender, user.Password)
 	if err != nil {
@@ -31,13 +32,19 @@ func CreateUser(user User) (int64, error) {
 	return lastId, nil
 }
 
-func GetUserByIdOrEmailOrNickName(column string, value string) (User, error) {
+func GetUserByIdentifier(identifier string) (User, error) {
 	user := User{}
-	query := "SELECT * FROM users  WHERE " + column + " = ?"
-	err := database.DB.QueryRow(query, value).Scan(&user.Id, &user.NickName, &user.FirstName, &user.LastName, &user.Email, &user.Age, &user.Gender, &user.Password, &user.CreatedAt)
+	query := `
+		SELECT *
+		FROM users
+		WHERE nickName = ? OR email = ?
+	`
+	err := database.DB.QueryRow(query, identifier, identifier).Scan(&user.Id, &user.NickName, &user.FirstName, &user.LastName, &user.Email, &user.Age, &user.Gender, &user.Password, &user.CreatedAt)
 	if err != nil {
+		fmt.Println(err)
 		return User{}, err
 	}
+
 	return user, nil
 }
 
