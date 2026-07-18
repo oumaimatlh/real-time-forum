@@ -16,7 +16,7 @@ type Session struct {
 }
 
 func InsertSession(idUser int) (string, error) {
-	query := "INSERT INTO session (user_id, token, expires_at) VALUES (?, ?, ?)"
+	query := "INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)"
 	token := uuid.Must(uuid.NewV4()).String()
 	expiresAt := time.Now().Add(time.Hour)
 	_, err := database.DB.Exec(query, idUser, token, expiresAt)
@@ -28,7 +28,7 @@ func InsertSession(idUser int) (string, error) {
 
 func GetSessionByToken(token string) (Session, error) {
 	session := Session{}
-	query := "SELECT id, user_id, token, expires_at FROM session WHERE token = ?"
+	query := "SELECT id, user_id, token, expires_at FROM sessions WHERE token = ?"
 	err := database.DB.QueryRow(query, token).Scan(&session.IdSession, &session.UserId, &session.Token, &session.ExpiresAt)
 	if err != nil {
 		return Session{}, err
@@ -41,7 +41,7 @@ func GetSessionByToken(token string) (Session, error) {
 }
 
 func DeleteSessionByToken(token string) error {
-	query := "DELETE  FROM session WHERE token = ?"
+	query := "DELETE  FROM sessions WHERE token = ?"
 	_, err := database.DB.Exec(query, token)
 	if err != nil {
 		return err
@@ -50,6 +50,6 @@ func DeleteSessionByToken(token string) error {
 }
 
 func DeleteSessionsByUserID(userID int) error {
-	_, err := database.DB.Exec("DELETE FROM session WHERE user_id = ?", userID)
+	_, err := database.DB.Exec("DELETE FROM sessions WHERE user_id = ?", userID)
 	return err
 }

@@ -11,14 +11,13 @@ func Route(mux *http.ServeMux) {
 	mux.HandleFunc("POST /register", controllers.RegisterHandler)
 	mux.HandleFunc("POST /login", controllers.LoginHandler)
 	mux.HandleFunc("POST /logout", controllers.LogoutHandler)
-	
 
 	// //Users
 	// mux.HandleFunc("GET /users"))
 	// mux.HandleFunc("GET /users/{id}")
 
-	// //Posts
-	// mux.HandleFunc("GET /posts")
+	// Posts
+	mux.HandleFunc("GET /posts", controllers.GetPostsHandler)
 	// mux.HandleFunc("GET /posts/{id}")
 
 	// //Categories

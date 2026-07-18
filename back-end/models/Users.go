@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"back-end/database"
@@ -35,13 +34,12 @@ func InsertUser(user User) (int64, error) {
 func GetUserByIdentifier(identifier string) (User, error) {
 	user := User{}
 	query := `
-		SELECT *
+		SELECT id, nickName, firstName, lastName, email, Age, gender,  password, created_at
 		FROM users
 		WHERE nickName = ? OR email = ?
 	`
 	err := database.DB.QueryRow(query, identifier, identifier).Scan(&user.Id, &user.NickName, &user.FirstName, &user.LastName, &user.Email, &user.Age, &user.Gender, &user.Password, &user.CreatedAt)
 	if err != nil {
-		fmt.Println(err)
 		return User{}, err
 	}
 

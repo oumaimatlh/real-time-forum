@@ -24,6 +24,7 @@ type RegisterRequest struct {
 type Response struct {
 	Message string `json:"message"`
 }
+
 type checkRequest struct {
 	Error error
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
 	"back-end/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -40,6 +41,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, "Password is required")
 		return
 	}
+
 	user, err := models.GetUserByIdentifier(data.Identifier)
 	if err != nil {
 		SendJSONResponse(w, http.StatusUnauthorized, "No Account with this identifier")
@@ -54,13 +56,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = models.DeleteSessionsByUserID(user.Id)
 	if err != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error")
+		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error 1")
 		return
 	}
 
 	token, err := models.InsertSession(user.Id)
 	if err != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error")
+		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error 2")
 		return
 	}
 

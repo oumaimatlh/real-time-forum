@@ -11,7 +11,7 @@ var DB *sql.DB
 
 func DBinit() {
 	var err error
-	if DB, err = sql.Open("sqlite3", "./forum"); err != nil {
+	if DB, err = sql.Open("sqlite3", "./forum.db"); err != nil {
 		log.Fatal(err)
 	}
 	if err = DB.Ping(); err != nil {
