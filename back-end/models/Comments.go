@@ -11,7 +11,7 @@ type Comments struct {
 	PostId    int
 	Content   string
 	CreatedAt time.Time
-	Username  string
+	NickName  string
 	Likes     int
 	Dislikes  int
 }
@@ -23,7 +23,7 @@ func InsertComment(c Comments) error {
 
 func GetCommentsByPost(postID int) ([]Comments, error) {
 	rows, err := database.DB.Query(`
-                SELECT c.id, c.user_id, c.post_id, c.content, c.created_at, u.username
+                SELECT c.id, c.user_id, c.post_id, c.content, c.created_at, u.nickName
                 FROM comments c
                 JOIN users u ON u.id = c.user_id
                 WHERE c.post_id = ?`, postID)
@@ -42,7 +42,7 @@ func GetCommentsByPost(postID int) ([]Comments, error) {
 			&c.PostId,
 			&c.Content,
 			&c.CreatedAt,
-			&c.Username,
+			&c.NickName,
 		)
 		if err != nil {
 			return nil, err

@@ -69,7 +69,35 @@ func GetAllUsers() ([]User, error) {
 	return users, nil
 }
 
-func ExistsInColumn(column, value string) (bool, error) {
+func GetUserByID(userID int) (User, error) {
+	user := User{}
+
+	query := `
+		SELECT id, nickName, firstName, lastName, email,
+		       age, gender, password, created_at
+		FROM users
+		WHERE id = ?
+	`
+
+	err := database.DB.QueryRow(query, userID).Scan(
+		&user.Id,
+		&user.NickName,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Age,
+		&user.Gender,
+		&user.Password,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+func ExistsInColumn(column string, value any) (bool, error) {
 	var count int
 	query := "SELECT COUNT(*) FROM users  WHERE " + column + " = ?"
 	err := database.DB.QueryRow(query, value).Scan(&count)

@@ -21,9 +21,6 @@ type RegisterRequest struct {
 	Password  string `json:"password"`
 }
 
-type Response struct {
-	Message string `json:"message"`
-}
 
 type checkRequest struct {
 	Error error
@@ -34,13 +31,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
 	if r.Method != "POST" {
-		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed")
+		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		SendJSONResponse(w, http.StatusBadRequest, "JSON Invalide")
+		SendJSONResponse(w, http.StatusBadRequest, "JSON Invalide", nil)
 		return
 	}
 
@@ -55,13 +52,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	check, errMsg := ValidateRegistrationInput(nickName, firstName, lastName, email, gender, password, age)
 
 	if !check {
-		SendJSONResponse(w, http.StatusBadRequest, errMsg)
+		SendJSONResponse(w, http.StatusBadRequest, errMsg, nil)
 		return
 	}
 
 	hashedPassword, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if errHash != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal server error")
+		SendJSONResponse(w, http.StatusInternalServerError, "Internal server error", nil)
 		return
 	}
 
@@ -76,10 +73,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, er := models.InsertUser(user); er != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal server error")
+		SendJSONResponse(w, http.StatusInternalServerError, "Internal server error", nil)
 		return
 	}
-	SendJSONResponse(w, http.StatusCreated, "User registered successfully")
+	SendJSONResponse(w, http.StatusCreated, "User registered successfully", nil)
 }
 
 func ValidateRegistrationInput(nickName, firstName, lastName, email, gender, password string, age int) (bool, string) {

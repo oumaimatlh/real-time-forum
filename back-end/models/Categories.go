@@ -6,6 +6,18 @@ type Category struct {
 	IdCat int
 	Name  string
 }
+
+func GetCategoryByID(id int) (Category, error) {
+	var category Category
+	query := `SELECT id, name FROM category WHERE id = ?`
+
+	err := database.DB.QueryRow(query, id).Scan(&category.IdCat, &category.Name,)
+	if err != nil {
+		return Category{}, err
+	}
+	return category, nil
+}
+
 func InsertPostCategory(postID int64, categoryID int) error {
 	_, err := database.DB.Exec("INSERT INTO post_category (post_id, category_id) VALUES (?, ?)", postID, categoryID)
 	return err

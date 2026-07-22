@@ -9,18 +9,18 @@ import (
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed")
+		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 	cookie, err := r.Cookie("token")
 	if err != nil {
-		SendJSONResponse(w, http.StatusUnauthorized, " Unauthorized")
+		SendJSONResponse(w, http.StatusUnauthorized, " Unauthorized", nil)
 		return
 	}
 
 	err = models.DeleteSessionByToken(cookie.Value)
 	if err != nil {
-		SendJSONResponse(w, http.StatusUnauthorized, " Invalid session")
+		SendJSONResponse(w, http.StatusUnauthorized, " Invalid session", nil)
 		return
 	}
 
@@ -31,5 +31,5 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Path:     "/",
 	})
-	SendJSONResponse(w, http.StatusOK, "Logout successful")
+	SendJSONResponse(w, http.StatusOK, "Logout successful", nil)
 }

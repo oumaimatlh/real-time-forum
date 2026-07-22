@@ -13,11 +13,11 @@ type contextKey string
 
 const UserIdKey contextKey = "userID"
 
-func AuthentificationMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
 		if err != nil {
-			controllers.SendJSONResponse(w, http.StatusUnauthorized, " Unauthorized")
+			controllers.SendJSONResponse(w, http.StatusUnauthorized, " Unauthorized", nil)
 			return
 		}
 		session, err := models.GetSessionByToken(cookie.Value)
@@ -29,7 +29,7 @@ func AuthentificationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				HttpOnly: true,
 				Path:     "/",
 			})
-			controllers.SendJSONResponse(w, http.StatusUnauthorized, " Unauthorized")
+			controllers.SendJSONResponse(w, http.StatusUnauthorized, " Unauthorized", nil)
 			return
 		}
 		cts := context.WithValue(r.Context(), UserIdKey, session.UserId)

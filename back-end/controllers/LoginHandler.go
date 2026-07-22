@@ -22,47 +22,47 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed")
+		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		SendJSONResponse(w, http.StatusBadRequest, "JSON Invalid")
+		SendJSONResponse(w, http.StatusBadRequest, "JSON Invalid", nil)
 		return
 	}
 
 	data.Identifier = strings.TrimSpace(data.Identifier)
 	if data.Identifier == "" {
-		SendJSONResponse(w, http.StatusBadRequest, "Identifier is required")
+		SendJSONResponse(w, http.StatusBadRequest, "Identifier is required", nil)
 		return
 	}
 	if data.Password == "" {
-		SendJSONResponse(w, http.StatusBadRequest, "Password is required")
+		SendJSONResponse(w, http.StatusBadRequest, "Password is required", nil)
 		return
 	}
 
 	user, err := models.GetUserByIdentifier(data.Identifier)
 	if err != nil {
-		SendJSONResponse(w, http.StatusUnauthorized, "No Account with this identifier")
+		SendJSONResponse(w, http.StatusUnauthorized, "No Account with this identifier", nil)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
 	if err != nil {
-		SendJSONResponse(w, http.StatusUnauthorized, "Invalid password")
+		SendJSONResponse(w, http.StatusUnauthorized, "Invalid password", nil)
 		return
 	}
 
 	err = models.DeleteSessionsByUserID(user.Id)
 	if err != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error 1")
+		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
 	token, err := models.InsertSession(user.Id)
 	if err != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error 2")
+		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
@@ -74,5 +74,5 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	SendJSONResponse(w, http.StatusOK, "Login successful")
+	SendJSONResponse(w, http.StatusOK, "Login successful", nil)
 }

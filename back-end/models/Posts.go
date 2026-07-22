@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"back-end/database"
@@ -12,7 +13,7 @@ type Post struct {
 	Title     string
 	Content   string
 	UserId    int
-	UserName  string
+	NickName  string
 	Comments  []Comments
 	Likes     int
 	Dislikes  int
@@ -20,6 +21,8 @@ type Post struct {
 }
 
 func InsertPost(post Post) (int64, error) {
+	fmt.Printf("UserId = %d\n", post.UserId)
+	fmt.Printf("%+v\n", post)
 	query := "INSERT INTO posts (title, content, user_id) VALUES (?, ?, ?)"
 	result, err := database.DB.Exec(query, post.Title, post.Content, post.UserId)
 	if err != nil {
@@ -44,7 +47,7 @@ func GetAllPosts() ([]Post, error) {
 
 func GetPostsByCategory(idcat int) ([]Post, error) {
 	query := `
-		SELECT p.id, p.title, p.content, p.user_id, p.created_at, u.username
+		SELECT p.id, p.title, p.content, p.user_id, p.created_at, u.nickName
 		FROM posts p
 		INNER JOIN post_category pc ON p.id = pc.post_id
 		INNER JOIN users u ON p.user_id = u.id
@@ -71,7 +74,7 @@ func GetFilteredPosts(userID int, selectedCats []string, filterLikes, filterMyPo
 			continue
 		}
 		query := `
-			SELECT DISTINCT p.id, p.title, p.content, p.user_id, p.created_at, u.username
+			SELECT DISTINCT p.id, p.title, p.content, p.user_id, p.created_at, u.nickName
 			FROM posts p
 			INNER JOIN users u ON p.user_id = u.id
 			INNER JOIN post_category pc ON p.id = pc.post_id
@@ -87,7 +90,7 @@ func GetFilteredPosts(userID int, selectedCats []string, filterLikes, filterMyPo
 
 	if filterLikes {
 		query := `
-			SELECT DISTINCT p.id, p.title, p.content, p.user_id, p.created_at, u.username
+			SELECT DISTINCT p.id, p.title, p.content, p.user_id, p.created_at, u.nickName
 			FROM posts p
 			INNER JOIN users u ON p.user_id = u.id
 			INNER JOIN likes_dislikes ld ON p.id = ld.post_id
@@ -102,7 +105,7 @@ func GetFilteredPosts(userID int, selectedCats []string, filterLikes, filterMyPo
 	}
 	if filterMyPosts {
 		query := `
-			SELECT p.id, p.title, p.content, p.user_id, p.created_at, u.username
+			SELECT p.id, p.title, p.content, p.user_id, p.created_at, u.nickName
 			FROM posts p
 			INNER JOIN users u ON p.user_id = u.id
 			WHERE p.user_id = ?
@@ -122,8 +125,17 @@ func GetFilteredPosts(userID int, selectedCats []string, filterLikes, filterMyPo
 
 func scanPost(row *sql.Row) (Post, error) {
 	var p Post
-	err := row.Scan(&p.IdPost, &p.Title, &p.Content, &p.UserId, &p.CreatedAt, &p.UserName)
+	err := row.Scan(&p.IdPost, &p.Title, &p.Content, &p.UserId, &p.CreatedAt, &p.NickName)
 	return p, err
+}
+
+func GetPostByID(id int) (Post, error) {
+	query := `
+		SELECT p.id, p.title, p.content, p.user_id, p.created_at, u.nickName
+		FROM posts p
+		INNER JOIN users u ON p.user_id = u.id
+		WHERE p.id = ?`
+	return scanPost(database.DB.QueryRow(query, id))
 }
 
 func scanPostsRows(rows *sql.Rows) ([]Post, error) {
@@ -131,11 +143,31 @@ func scanPostsRows(rows *sql.Rows) ([]Post, error) {
 	for rows.Next() {
 		post := Post{}
 		if err := rows.Scan(&post.IdPost, &post.Title, &post.Content,
-			&post.UserId, &post.CreatedAt, &post.UserName); err != nil {
+			&post.UserId, &post.CreatedAt, &post.NickName); err != nil {
 			return nil, err
 		}
+
+		comments, err := GetCommentsByPost(post.IdPost)
+		if err != nil {
+			return nil, err
+		}
+		post.Comments = comments
+
+		likes, err := CountLikeDislikeByPost(post.IdPost, "like")
+		if err != nil {
+			return nil, err
+		}
+		post.Likes = likes
+
+		dislikes, err := CountLikeDislikeByPost(post.IdPost, "dislike")
+		if err != nil {
+			return nil, err
+		}
+		post.Dislikes = dislikes
+
 		posts = append(posts, post)
 	}
+
 	return posts, rows.Err()
 }
 
