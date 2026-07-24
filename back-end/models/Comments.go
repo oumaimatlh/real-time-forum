@@ -1,8 +1,9 @@
 package models
 
 import (
-	"back-end/database"
 	"time"
+
+	"back-end/database"
 )
 
 type Comments struct {
@@ -17,7 +18,7 @@ type Comments struct {
 }
 
 func InsertComment(c Comments) error {
-	_, err := database.DB.Exec("INSERT INTO comments (user_id, post_id, content) VALUES (?, ?, ?)",c.UserId, c.PostId, c.Content)
+	_, err := database.DB.Exec("INSERT INTO comments (user_id, post_id, content) VALUES (?, ?, ?)", c.UserId, c.PostId, c.Content)
 	return err
 }
 
@@ -61,4 +62,74 @@ func GetCommentsByPost(postID int) ([]Comments, error) {
 		comments[i].Dislikes = dislikes
 	}
 	return comments, nil
+}
+
+func GetCommentByID(commentID int) (Comments, error) {
+	var comment Comments
+
+	query := `
+		SELECT c.id, c.user_id, c.post_id, c.content, c.created_at, u.nickName
+		FROM comments c
+		INNER JOIN users u ON u.id = c.user_id
+		WHERE c.id = ?
+	`
+
+	err := database.DB.QueryRow(query, commentID).Scan(
+		&comment.IdComment,
+		&comment.UserId,
+		&comment.PostId,
+		&comment.Content,
+		&comment.CreatedAt,
+		&comment.NickName,
+	)
+	if err != nil {
+		return Comments{}, err
+	}
+
+	likes, _ := CountLikesByComments(comment.IdComment, comment.PostId, "like")
+	dislikes, _ := CountLikesByComments(comment.IdComment, comment.PostId, "dislike")
+
+	comment.Likes = likes
+	comment.Dislikes = dislikes
+
+	return comment, nil
+}
+
+func ToggleCommentReaction(userId, postId, commentId int, reactionType string) error {
+	currentType, err := CheckReactionByUser(userId, postId, &commentId)
+	if err != nil {
+		return err
+	}
+
+	if currentType == reactionType {
+		return DeleteReaction(userId, postId, &commentId)
+	}
+
+	if currentType != "" {
+		query := `
+            UPDATE likes_dislikes
+            SET type = ?
+            WHERE user_id = ?
+            AND post_id = ?
+            AND comment_id = ?
+        `
+
+		_, err := database.DB.Exec(query,
+			reactionType,
+			userId,
+			postId,
+			commentId,
+		)
+
+		return err
+	}
+
+	_, err = InsertReaction(Reaction{
+		UserID:    userId,
+		PostID:    postId,
+		CommentID: &commentId,
+		Type:      reactionType,
+	})
+
+	return err
 }

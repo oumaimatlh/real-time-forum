@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"back-end/models"
 )
@@ -23,13 +22,13 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	if r.Method != http.MethodGet {
 		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
-	id := strings.TrimPrefix(r.URL.Path, "/users/")
-	id = strings.Trim(id, "/")
+	id := r.PathValue("id")
 	if id == "" {
 		SendJSONResponse(w, http.StatusBadRequest, "User ID is required", nil)
 		return

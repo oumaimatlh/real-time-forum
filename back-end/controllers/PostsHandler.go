@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"back-end/models"
 )
 
 type PostRequest struct {
-	UserId   int    `json:UserId`
+	UserId   int    `json:"userId"`
 	Title    string `json:"title"`
 	Content  string `json:"content"`
-	Category []int  `json:category`
+	Category []int  `json:"category"`
 }
 
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,40 +65,20 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		UserId:  data.UserId,
 	}
 
-	_, err = models.InsertPost(post)
+	IdPost, err := models.InsertPost(post)
 	if err != nil {
 		SendJSONResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
+	for _, categoryID := range data.Category {
+		models.InsertPostCategory(IdPost, categoryID)
+		if err != nil {
+			SendJSONResponse(w, http.StatusBadRequest, "Invalid category", nil)
+			return
+		}
+	}
 
 	SendJSONResponse(w, http.StatusCreated, "Post created successfully", nil)
-}
-
-func GetPostsByCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		SendJSONResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
-		return
-	}
-
-	categoryID := r.URL.Query().Get("category")
-	if categoryID == "" {
-		SendJSONResponse(w, http.StatusBadRequest, "Category is required", nil)
-		return
-	}
-
-	id, err := strconv.Atoi(categoryID)
-	if err != nil {
-		SendJSONResponse(w, http.StatusBadRequest, "Invalid category", nil)
-		return
-	}
-
-	posts, err := models.GetPostsByCategory(id)
-	if err != nil {
-		SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error", nil)
-		return
-	}
-
-	SendJSONResponse(w, http.StatusOK, "Posts retrieved successfully", posts)
 }
 
 func ValidatePostInput(data PostRequest) error {

@@ -9,29 +9,31 @@ import (
 
 func Route(mux *http.ServeMux) {
 	// Authentification
-	mux.HandleFunc("POST /register", middleware.AuthMiddleware(controllers.RegisterHandler))
-	mux.HandleFunc("POST /login", middleware.AuthMiddleware(controllers.LoginHandler))
-	mux.HandleFunc("POST /logout", middleware.AuthMiddleware(controllers.LogoutHandler))
+	mux.HandleFunc("POST /api/register", controllers.RegisterHandler)
+	mux.HandleFunc("POST /api/login", controllers.LoginHandler)
+	mux.HandleFunc("POST /api/logout", middleware.AuthMiddleware(controllers.LogoutHandler))
 
 	// Users
-	mux.HandleFunc("GET /users", middleware.AuthMiddleware(controllers.GetUsersHandler))
-	mux.HandleFunc("GET /users/{id}", middleware.AuthMiddleware(controllers.GetUserByIDHandler))
+	mux.HandleFunc("GET /api/users", middleware.AuthMiddleware(controllers.GetUsersHandler))
+	mux.HandleFunc("GET /api/users/{id}", middleware.AuthMiddleware(controllers.GetUserByIDHandler))
+
+	// Categories
+	mux.HandleFunc("GET /api/categories", controllers.GetCategoryHandler)
 
 	// Posts
-	mux.HandleFunc("GET /posts", controllers.GetPostsHandler)
-	mux.HandleFunc("POST /posts", middleware.AuthMiddleware(controllers.CreatePostHandler))
-	//-------//
-	mux.HandleFunc("GET /posts/category", controllers.GetPostsByCategoryHandler)
+	mux.HandleFunc("POST /api/posts", middleware.AuthMiddleware(controllers.CreatePostHandler))
+	mux.HandleFunc("GET /api/posts", controllers.GetPostsHandler)
+	// Post Reactions
+	mux.HandleFunc("POST /api/posts/{id}/like", middleware.AuthMiddleware(controllers.LikePostHandler))
+	mux.HandleFunc("POST /api/posts/{id}/dislike", middleware.AuthMiddleware(controllers.DislikePostHandler))
 
-	//Categories
-	mux.HandleFunc("GET /categories", middleware.AuthMiddleware(controllers.GetCategoryHandler))
+	// Comments
+	mux.HandleFunc("POST /api/posts/{id}/comment", middleware.AuthMiddleware(controllers.CreateCommentPostHandler))
 
-	/*
-		add comment  POST /api/posts/:id/comments
-		POST /api/posts/:id/like
-		POST /api/posts/:id/dislike
-		GET /api/posts?mine=true
+	// Comment Reactions
+	mux.HandleFunc("POST /api/comments/{id}/like", middleware.AuthMiddleware(controllers.LikeCommentHandler))
+	mux.HandleFunc("POST /api/comments/{id}/dislike", middleware.AuthMiddleware(controllers.DislikeCommentHandler))
 
-
-	*/
+	// Filter
+	mux.HandleFunc("GET /api/posts/filter", middleware.AuthMiddleware(controllers.FilterPostsHandler))
 }
