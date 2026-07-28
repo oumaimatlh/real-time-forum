@@ -45,4 +45,12 @@ func Route(mux *http.ServeMux) {
 	//Historique d Message entre 2 user 
 	mux.HandleFunc("GET /api/messages", middleware.AuthMiddleware(controllers.GetConversationMessagesHandler))
 
+
+	/*
+		A faire: 
+			Afficher les conversation avec le tri de ces conversations
+			Pagination d Posts 
+			RateLimite 
+			Verification d Post Man pour tous les routes 	
+	*/
 }
