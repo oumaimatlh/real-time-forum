@@ -1,5 +1,6 @@
 ### Real time forume
 #### Deep Explication
+
 * Connexion simple entre client et serveur http :
     Serveur lorsqu'il démarre créer Un socket TCP 
         Un sokcet est Objet qui permet a un programme de communiquer sur le réseau  fourni par SE 
