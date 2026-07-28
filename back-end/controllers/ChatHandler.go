@@ -161,11 +161,15 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println("Failed sending message:", err)
 			}
+		} else {
+			client.Send(map[string]interface{}{
+				"type":    "info",
+				"message": "User is offline. Message saved.",
+			})
 		}
 	}
 }
 
-// Methode dyal struct pour eviter les data race des goroutines qui ecrivent sur la meme connexion WebSocket
 func (c *Client) Send(data interface{}) error {
 	c.Mu.Lock()
 
@@ -204,3 +208,5 @@ func BroadCastOnlineUsers() {
 		}
 	}
 }
+
+

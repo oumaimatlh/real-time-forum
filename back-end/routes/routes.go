@@ -37,6 +37,12 @@ func Route(mux *http.ServeMux) {
 	// Filter
 	mux.HandleFunc("GET /api/posts/filter", middleware.AuthMiddleware(controllers.FilterPostsHandler))
 
+	//Conversation 
+	//mux.HandleFunc("GET /api/conversation", middleware.AuthMiddleware(controllers.GetConversationHandler))
 	//CHAT
 	mux.HandleFunc("GET /api/chat", middleware.AuthMiddleware(controllers.ChatHandler))
+
+	//Historique d Message entre 2 user 
+	mux.HandleFunc("GET /api/messages", middleware.AuthMiddleware(controllers.GetConversationMessagesHandler))
+
 }

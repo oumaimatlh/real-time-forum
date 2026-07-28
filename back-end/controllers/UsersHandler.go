@@ -48,3 +48,4 @@ func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	SendJSONResponse(w, http.StatusOK, "User retrieved successfully", user)
 }
+
