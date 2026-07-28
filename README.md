@@ -156,3 +156,49 @@ WebSOcket Frame :
 | Payload        |
 | "Bonjour Bob"  |
 +----------------+
+
+
+client A : > Creation d une connexion webSocket avec Server 
+
+
+
+RQ: la diff entre sync.Mutex && sync.RWMutex
+
++---------------------------+
+|        Channel            |
+|---------------------------|
+| file d'attente            |
+| capacité                  |
+| goroutines en attente     |
++---------------------------+
+Un channel est donc un objet qui appartient au runtime Go.
+
+ch := make(chan int) => Creation d channel (ch contient une référence vers ce objet channel )
+
+<- envoyer une valeur ds le channel 
+
+Problematique:
+            Connexion Client 5
+
+                       ▲
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+          │            │            │
+Goroutine Client 8   Broadcast   (autres...)
+
+
+
+Un Client => Une connexion WebSocket => Go créer un objet con (websocket.Conn)
+    Une 1er goroutine veut ecrire : con.WriteJson("bonjour")
+    une 2 eme arrive : con.WriteJSON("Salut")
+                   websocket.Conn
+
+                        ▲
+                        │
+                ┌────────┴────────┐
+                │                 │
+
+            Goroutine A       Goroutine B
+
+            la bib Gorilla Websocket ne supporte pas 2 ecritures simultanés concurrent write to websocket connection
