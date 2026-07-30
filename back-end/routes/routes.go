@@ -9,47 +9,40 @@ import (
 
 func Route(mux *http.ServeMux) {
 	// Authentification
-	mux.HandleFunc("POST /api/register", controllers.RegisterHandler)
-	mux.HandleFunc("POST /api/login", controllers.LoginHandler)
-	mux.HandleFunc("POST /api/logout", middleware.AuthMiddleware(controllers.LogoutHandler))
+	mux.Handle("POST /api/register", middleware.RateLimiter(controllers.RegisterHandler))
+	mux.Handle("POST /api/login", middleware.RateLimiter(controllers.LoginHandler))
+	mux.Handle("POST /api/logout", middleware.RateLimiter(middleware.AuthMiddleware(controllers.LogoutHandler)))
 
 	// Users
-	mux.HandleFunc("GET /api/users", middleware.AuthMiddleware(controllers.GetUsersHandler))
-	mux.HandleFunc("GET /api/users/{id}", middleware.AuthMiddleware(controllers.GetUserByIDHandler))
+	mux.Handle("GET /api/users", middleware.RateLimiter(middleware.AuthMiddleware(controllers.GetUsersHandler)))
+	mux.Handle("GET /api/users/{id}", middleware.RateLimiter(middleware.AuthMiddleware(controllers.GetUserByIDHandler)))
 
 	// Categories
-	mux.HandleFunc("GET /api/categories", controllers.GetCategoryHandler)
+	mux.Handle("GET /api/categories", middleware.RateLimiter(controllers.GetCategoryHandler))
 
 	// Posts
-	mux.HandleFunc("POST /api/posts", middleware.AuthMiddleware(controllers.CreatePostHandler))
-	mux.HandleFunc("GET /api/posts", controllers.GetPostsHandler)
+	mux.Handle("POST /api/posts", middleware.RateLimiter(middleware.AuthMiddleware(controllers.CreatePostHandler)))
+	mux.Handle("GET /api/posts", middleware.RateLimiter(controllers.GetPostsHandler))
 	// Post Reactions
-	mux.HandleFunc("POST /api/posts/{id}/like", middleware.AuthMiddleware(controllers.LikePostHandler))
-	mux.HandleFunc("POST /api/posts/{id}/dislike", middleware.AuthMiddleware(controllers.DislikePostHandler))
+	mux.Handle("POST /api/posts/{id}/like", middleware.RateLimiter(middleware.AuthMiddleware(controllers.LikePostHandler)))
+	mux.Handle("POST /api/posts/{id}/dislike", middleware.RateLimiter(middleware.AuthMiddleware(controllers.DislikePostHandler)))
 
 	// Comments
-	mux.HandleFunc("POST /api/posts/{id}/comment", middleware.AuthMiddleware(controllers.CreateCommentPostHandler))
+	mux.Handle("POST /api/posts/{id}/comment", middleware.RateLimiter(middleware.AuthMiddleware(controllers.CreateCommentPostHandler)))
 
 	// Comment Reactions
-	mux.HandleFunc("POST /api/comments/{id}/like", middleware.AuthMiddleware(controllers.LikeCommentHandler))
-	mux.HandleFunc("POST /api/comments/{id}/dislike", middleware.AuthMiddleware(controllers.DislikeCommentHandler))
+	mux.Handle("POST /api/comments/{id}/like", middleware.RateLimiter(middleware.AuthMiddleware(controllers.LikeCommentHandler)))
+	mux.Handle("POST /api/comments/{id}/dislike", middleware.RateLimiter(middleware.AuthMiddleware(controllers.DislikeCommentHandler)))
 
 	// Filter
-	mux.HandleFunc("GET /api/posts/filter", middleware.AuthMiddleware(controllers.FilterPostsHandler))
+	mux.Handle("GET /api/posts/filter", middleware.RateLimiter(middleware.AuthMiddleware(controllers.FilterPostsHandler)))
 
 	// Conversation
-	mux.HandleFunc("GET /api/conversations", middleware.AuthMiddleware(controllers.	GetConversationsHandler))
+	mux.Handle("GET /api/conversations", middleware.RateLimiter(middleware.AuthMiddleware(controllers.GetConversationsHandler)))
 
 	// CHAT
-	mux.HandleFunc("GET /api/chat", middleware.AuthMiddleware(controllers.ChatHandler))
+	mux.Handle("GET /api/chat", middleware.RateLimiter(middleware.AuthMiddleware(controllers.ChatHandler)))
 
 	// Historique d Message entre 2 user
-	mux.HandleFunc("GET /api/history", middleware.AuthMiddleware(controllers.GetConversationMessagesHandler))
-
-	/*
-		A faire:
-			Afficher les conversation avec le tri de ces conversations
-			Pagination d Posts
-			RateLimite
-	*/
+	mux.Handle("GET /api/history", middleware.RateLimiter(middleware.AuthMiddleware(controllers.GetConversationMessagesHandler)))
 }
