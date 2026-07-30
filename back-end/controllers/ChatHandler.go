@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"back-end/middleware"
@@ -18,9 +19,9 @@ type Client struct {
 }
 
 var (
-	clients     = map[int]*Client{}
+	clients     = map[int][]*Client{}
 	onlineUsers = map[int]bool{}
-	mu          sync.RWMutex // protege jusre ces 2 maps
+	mu          sync.RWMutex // protecte jusre ces 2 maps
 )
 
 type MessagePayload struct {
@@ -55,7 +56,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mu.Lock()
-	clients[senderId] = client
+	clients[senderId] = append(clients[senderId], client)
 	onlineUsers[senderId] = true
 	mu.Unlock()
 
@@ -63,8 +64,21 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		mu.Lock()
-		delete(clients, senderId)
-		delete(onlineUsers, senderId)
+		userClients := clients[senderId]
+
+		for i, connectedClient := range userClients {
+			if connectedClient == client {
+				clients[senderId] = append(
+					userClients[:i],
+					userClients[i+1:]...,
+				)
+				break
+			}
+		}
+		if len(clients[senderId]) == 0 {
+			delete(clients, senderId)
+			delete(onlineUsers, senderId)
+		}
 		mu.Unlock()
 
 		BroadCastOnlineUsers()
@@ -124,7 +138,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if payload.Message == "" || len(payload.Message) > 500 {
+		if strings.TrimSpace(payload.Message) == "" || len(payload.Message) > 500 {
 			client.Send(ErrorResponse{
 				Type:    "error",
 				Message: "Invalid message",
@@ -150,16 +164,20 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		mu.RLock()
-		receiver, ok := clients[payload.ReceiverId]
+		receiverClients := clients[payload.ReceiverId]
 		mu.RUnlock()
 
-		if ok {
-			err = receiver.Send(map[string]interface{}{
-				"senderId": senderId,
-				"message":  payload.Message,
-			})
-			if err != nil {
-				fmt.Println("Failed sending message:", err)
+		if len(receiverClients) > 0 {
+			for _, receiver := range receiverClients {
+
+				err = receiver.Send(map[string]interface{}{
+					"type":     "private_message",
+					"senderId": senderId,
+					"message":  message,
+				})
+				if err != nil {
+					fmt.Println("Failed sending message:", err)
+				}
 			}
 		} else {
 			client.Send(map[string]interface{}{
@@ -183,14 +201,16 @@ func BroadCastOnlineUsers() {
 
 	users := make([]int, 0, len(onlineUsers))
 
-	clientsCopy := make([]*Client, 0, len(clients))
+	clientsCopy := make([]*Client, 0)
 
 	for id := range onlineUsers {
 		users = append(users, id)
 	}
 
-	for _, client := range clients {
-		clientsCopy = append(clientsCopy, client)
+	for _, userClients := range clients {
+		for _, client := range userClients {
+			clientsCopy = append(clientsCopy, client)
+		}
 	}
 
 	mu.RUnlock()
@@ -208,5 +228,3 @@ func BroadCastOnlineUsers() {
 		}
 	}
 }
-
-

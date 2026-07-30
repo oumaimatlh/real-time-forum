@@ -38,6 +38,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func writeUnauthorizedResponse(w http.ResponseWriter) {
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
 	_ = json.NewEncoder(w).Encode(map[string]any{
