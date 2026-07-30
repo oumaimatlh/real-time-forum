@@ -37,20 +37,19 @@ func Route(mux *http.ServeMux) {
 	// Filter
 	mux.HandleFunc("GET /api/posts/filter", middleware.AuthMiddleware(controllers.FilterPostsHandler))
 
-	//Conversation 
-	//mux.HandleFunc("GET /api/conversation", middleware.AuthMiddleware(controllers.GetConversationHandler))
-	//CHAT
+	// Conversation
+	mux.HandleFunc("GET /api/conversations", middleware.AuthMiddleware(controllers.	GetConversationsHandler))
+
+	// CHAT
 	mux.HandleFunc("GET /api/chat", middleware.AuthMiddleware(controllers.ChatHandler))
 
-	//Historique d Message entre 2 user 
-	mux.HandleFunc("GET /api/messages", middleware.AuthMiddleware(controllers.GetConversationMessagesHandler))
-
+	// Historique d Message entre 2 user
+	mux.HandleFunc("GET /api/history", middleware.AuthMiddleware(controllers.GetConversationMessagesHandler))
 
 	/*
-		A faire: 
+		A faire:
 			Afficher les conversation avec le tri de ces conversations
-			Pagination d Posts 
-			RateLimite 
-			Verification d Post Man pour tous les routes 	
+			Pagination d Posts
+			RateLimite
 	*/
 }
