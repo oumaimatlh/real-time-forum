@@ -35,14 +35,15 @@ func InsertPost(post Post) (int64, error) {
 	return lastPostId, nil
 }
 
-func GetAllPosts() ([]Post, error) {
+func GetAllPosts(limit, offset int) ([]Post, error) {
 	query := `
 		SELECT posts.id, posts.title, posts.content, posts.user_id, posts.created_at, users.nickName
 		FROM posts
 		INNER JOIN users ON posts.user_id = users.id 
-		ORDER BY posts.created_at DESC`
+		ORDER BY posts.created_at DESC
+		LIMIT ? OFFSET ?`
 
-	return getPostsFromQuery(query)
+	return getPostsFromQuery(query, limit, offset)
 }
 
 func GetPostsByCategory(idcat int) ([]Post, error) {

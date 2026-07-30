@@ -27,7 +27,28 @@ func FilterPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Aucun filtre
 	if categoryParam == "" && !filterMine && !filterLiked {
-		posts, err := models.GetAllPosts()
+		limit := 10
+		offset := 0
+
+		if value := r.URL.Query().Get("limit"); value != "" {
+			parsedLimit, err := strconv.Atoi(value)
+			if err != nil || parsedLimit <= 0 {
+				SendJSONResponse(w, http.StatusBadRequest, "Invalid limit", nil)
+				return
+			}
+			limit = parsedLimit
+		}
+
+		if value := r.URL.Query().Get("offset"); value != "" {
+			parsedOffset, err := strconv.Atoi(value)
+			if err != nil || parsedOffset < 0 {
+				SendJSONResponse(w, http.StatusBadRequest, "Invalid offset", nil)
+				return
+			}
+			offset = parsedOffset
+		}
+
+		posts, err := models.GetAllPosts(limit, offset)
 		if err != nil {
 			SendJSONResponse(w, http.StatusInternalServerError, err.Error(), nil)
 			return
