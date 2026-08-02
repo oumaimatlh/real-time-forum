@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"back-end/middleware"
 	"back-end/models"
 )
 
@@ -68,9 +69,10 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	_, err = models.ExistsInColumn("id", data.UserId)
-	if err != nil {
-		SendJSONResponse(w, http.StatusNotFound, "User not found", nil)
+
+	userID, ok := r.Context().Value(middleware.UserIdKey).(int)
+	if !ok || userID <= 0 {
+		SendJSONResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
@@ -84,7 +86,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	post := models.Post{
 		Title:   data.Title,
 		Content: data.Content,
-		UserId:  data.UserId,
+		UserId:  userID,
 	}
 
 	IdPost, err := models.InsertPost(post)
@@ -93,7 +95,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, categoryID := range data.Category {
-		models.InsertPostCategory(IdPost, categoryID)
+		err := models.InsertPostCategory(IdPost, categoryID)
 		if err != nil {
 			SendJSONResponse(w, http.StatusBadRequest, "Invalid category", nil)
 			return

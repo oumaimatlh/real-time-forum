@@ -43,13 +43,15 @@ func CreateCommentPostHandler(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusNotFound, "Post not found", nil)
 		return
 	}
-	_, err = models.ExistsInColumn("id", data.UserId)
-	if err != nil {
-		SendJSONResponse(w, http.StatusNotFound, "User not found", nil)
+
+	userID, ok := r.Context().Value(middleware.UserIdKey).(int)
+	if !ok || userID <= 0 {
+		SendJSONResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
+
 	comment := models.Comments{
-		UserId:  data.UserId,
+		UserId:  userID,
 		PostId:  postID,
 		Content: data.Content,
 	}

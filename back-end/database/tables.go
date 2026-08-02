@@ -12,15 +12,7 @@ func TableCreation() {
   			email VARCHAR UNIQUE NOT NULL,
 			age  INTEGER NOT NULL, 
 			gender VARCHAR NOT NULL CHECK(gender IN ('male', 'female')),
-  			password VARCHAR UNIQUE NOT NULL,
-  			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	)`,
-
-		`CREATE TABLE IF NOT EXISTS posts(
-			id INTEGER PRIMARY KEY,
-			title VARCHAR,
-			content TEXT,
-			user_id INTEGER NOT NULL,
+			password VARCHAR NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	)`,
